@@ -1,33 +1,66 @@
-from PIL import Image, ImageDraw
-
-""" Need to Implement output --> url;color;color;color """
-import csv
-import requests
+from PIL import Image
 import cStringIO
 import urllib2
 from multiprocessing import Pool, TimeoutError
+import time
+import csv
 
-def get_colors(infile, outfile, numcolors=4, swatchsize=20, resize=150):
 
-    image = Image.open(infile)
-    image = image.resize((resize, resize))
-    result = image.convert('P', palette=Image.ADAPTIVE, colors=numcolors)
-    result.putalpha(0)
-    colors = result.getcolors(resize*resize)
-    print colors[1:]
+""" Need to Implement output --> url;color;color;color """
 
-    # Save colors to file
+# SET URLS
+URLs = []
+with open('data/urls.txt', 'r') as f:
+    # read data as lines of text
+    URLs = [x.splitlines()[0] for x in list(f.readlines())]
 
-    pal = Image.new('RGB', (swatchsize*numcolors, swatchsize))
-    draw = ImageDraw.Draw(pal)
+# COLOR GRABBER - https://gist.github.com/zollinger/1722663 
+def getColors(infile, numcolors=3, resize=150):
 
-    posx = 0
-    for count, col in colors:
-        draw.rectangle([posx, 0, posx+swatchsize, swatchsize], fill=col)
-        posx = posx + swatchsize
+    image = Image.open(infile)                                              # Using PIL open image
+    image = image.resize((resize, resize))                                  # resize image to reduce pixel set
+    result = image.convert('P', palette=Image.ADAPTIVE, colors=numcolors)   # Convert to image pallete to get dominant colors
+    result.putalpha(0)                                                      # Set alpha to zero for RGB
+    colors = result.getcolors(resize*resize)                                # get colors in RGB of the resized image
+    colors = [y[:-1] for y in [x[-1] for x in colors]]                      # take RGB values
+    
+    print colors
+    return colors
 
-    del draw
-    pal.save(outfile, "PNG")
+def readImage(url):
+    fl = None
+    try:
+        fl = cStringIO.StringIO(urllib2.urlopen(url).read())                # create image data from URL string
+    except:
+        print "Could not Download Image from Url"
+
+    return (url, getColors(fl))                                             # Return the formatted data string
+
 
 if __name__ == '__main__':
-    get_colors('images/Image1.jpg', 'images/out1.png')
+    import time
+    start = time.clock()
+    try:
+        pool = Pool(processes=16)                                           # Pool processes in map multithread, as no specific order of operations is desired
+        data = pool.map(readImage, URLs)
+    except TimeoutError:
+        print "Error, image downloading Timed Out"
+
+    with open("data/output.csv", 'wb') as csvFile:                          # Create CSV file
+        lineWriter = csv.writer(csvFile)
+        for line in data:
+            lineWriter.writerow((line[0], line[1][0], line[1][1], line[1][2]))
+
+    end = time.clock()
+
+    print end - start
+
+
+
+
+
+
+
+
+
+
