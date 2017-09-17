@@ -38,8 +38,8 @@ def readImage(url):
 
 
 if __name__ == '__main__':
-    import time
-    start = time.clock()
+    import timeit
+    time = timeit.default_timer()
     try:
         pool = Pool(processes=16)                                           # Pool processes in map multithread, as no specific order of operations is desired
         data = pool.map(readImage, URLs)
@@ -51,10 +51,7 @@ if __name__ == '__main__':
         for line in data:
             lineWriter.writerow((line[0], line[1][0], line[1][1], line[1][2]))
 
-    end = time.clock()
-
-    print end - start
-
+    print time 
 
 
 
