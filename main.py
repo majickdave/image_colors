@@ -14,9 +14,8 @@ URLs = []
 with open('data/urls.txt', 'r') as f:
     # read data as lines of text
     URLs = [x.splitlines()[0] for x in list(f.readlines())]
-    print(len(URLs))
     URLs = list(set(URLs))
-    print(len(URLs))
+
 
 # COLOR GRABBER - https://gist.github.com/zollinger/1722663 
 def getColors(infile, numcolors=3, resize=150):
