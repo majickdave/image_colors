@@ -3,7 +3,6 @@ import cStringIO
 import urllib2
 from multiprocessing import Pool, TimeoutError
 import multiprocessing
-import time
 import csv
 
 
