@@ -35,7 +35,9 @@ def readImage(url):
     except:
         print "Could not Download Image from Url"
 
-    return (url, getColors(fl))                                             # Return the formatted data string
+    finally:
+        print url, "completed"
+        return (url, getColors(fl))                                             # Return the formatted data string
 
 if __name__ == '__main__':
     import timeit
